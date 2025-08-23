@@ -27,7 +27,7 @@ jobs:
 
     - name: Deploy to Apps Script
       run: |
-        echo ${{ secrets.CLASP_TOKEN }} > ~/.clasprc.json
+        printf '%s' '${{ secrets.CLASP_TOKEN }}' > ~/.clasprc.json
         npm run push
       env:
         CLASP_TOKEN: ${{ secrets.CLASP_TOKEN }}
