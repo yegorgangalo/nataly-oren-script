@@ -2,7 +2,7 @@
 const API_KEY = PropertiesService.getScriptProperties().getProperty('NOTION_API_KEY');
 const DB_ID = PropertiesService.getScriptProperties().getProperty('NOTION_DB_ID');
 const API_BASE_URL = PropertiesService.getScriptProperties().getProperty('NOTION_API_BASE_URL');
-const COMPANY_EMAIL = PropertiesService.getScriptProperties().getScriptProperties().getProperty('COMPANY_EMAIL');
+const COMPANY_EMAIL = PropertiesService.getScriptProperties().getProperty('COMPANY_EMAIL');
 
 // Common headers
 const getHeaders = () => ({
