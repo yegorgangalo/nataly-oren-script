@@ -38,28 +38,12 @@ function onFormSubmit(e) {
 }
 
 const identifyForm = (namedValues) => {
-  if (!namedValues?.length) return null;
-
-  // Check if row has any meaningful data
-  const hasData = Object.values(namedValues).some(values =>
-    values?.[0]?.toString().trim() !== ''
-  );
-
-  if (!hasData) return null;
-
-        // Check for form type using hidden field identifiers
-  if (namedValues[FORM_TYPE.REGISTRATION]?.[0]?.toString().trim() !== '') {
-    return FORM_TYPE.REGISTRATION;
+  if (!namedValues) return null;
+  for (const formType of Object.values(FORM_TYPE)) {
+    if (formType in namedValues) {
+      return formType;
+    }
   }
-
-  if (namedValues[FORM_TYPE.TRAINING]?.[0]?.toString().trim() !== '') {
-    return FORM_TYPE.TRAINING;
-  }
-
-  if (namedValues[FORM_TYPE.DIAGNOSTIC]?.[0]?.toString().trim() !== '') {
-    return FORM_TYPE.DIAGNOSTIC;
-  }
-
   return null;
 }
 
