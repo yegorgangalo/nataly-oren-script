@@ -3,12 +3,27 @@ const API_KEY = PropertiesService.getScriptProperties().getProperty('NOTION_API_
 const DB_ID = PropertiesService.getScriptProperties().getProperty('NOTION_DB_ID');
 const API_BASE_URL = PropertiesService.getScriptProperties().getProperty('NOTION_API_BASE_URL');
 const COMPANY_EMAIL = PropertiesService.getScriptProperties().getProperty('COMPANY_EMAIL');
+const NOTION_BASE_URL = 'https://www.notion.so';
 
 // Common headers
 const getHeaders = () => ({
   "Authorization": `Bearer ${API_KEY}`,
-  "Notion-Version": "2022-06-28"
+  "Notion-Version": "2022-06-28",
 });
+
+const getNotionShareLink = () => {
+  // Generate a shareable link to your Notion database
+  // You can customize this URL based on your setup
+
+  // Option 1: Direct database link (public)
+  return `${NOTION_BASE_URL}/${DB_ID.replace(/-/g, '')}?v=`;
+
+  // Option 2: If you have a specific page template
+  // return `${NOTION_BASE_URL}/Your-Page-Title-${DB_ID.replace(/-/g, '')}`;
+
+  // Option 3: Custom domain (if you have one)
+  // return `${NOTION_BASE_URL}/notion/${DB_ID}`;
+};
 
 function onFormSubmit(e) {
   console.log("Event namedValues:", e.namedValues);
@@ -343,48 +358,62 @@ function createNotionPage(name, email) {
 
 function sendNotionInvite(email, name) {
   try {
-    const invitePayload = {
-      email: email,
-      type: "person"
-    };
+    // Send email invitation to the user
+    const subject = "Welcome! Your Notion Access is Ready";
+    const message = `
+Hello ${name}!
 
-    const options = {
-      method: "post",
-      contentType: "application/json",
-      headers: getHeaders(),
-      payload: JSON.stringify(invitePayload)
-    };
+Welcome to our platform! Your account has been created successfully.
 
-    const response = UrlFetchApp.fetch(`${API_BASE_URL}/v1/invites`, options);
-    const responseCode = response.getResponseCode();
+🔗 **Access Your Dashboard:**
+${getNotionShareLink()}
 
-    if (responseCode === 200) {
-      const result = JSON.parse(response.getContentText());
-      console.log(`Invite sent successfully to ${email}`);
-      sendNotification("Success", `Invite sent to ${email} for user ${name}`);
-      return true;
-    } else {
-      console.error(`Failed to send invite, response code: ${responseCode}`);
-      sendNotification("Error", `Failed to send invite to ${email}, response code: ${responseCode}`);
-      return false;
-    }
+📱 **What you can do:**
+• View your personal dashboard
+• Track your progress
+• Access your documents and resources
 
+If you have any questions or need assistance, please don't hesitate to reach out.
+
+Best regards,
+Nataly Oren
+
+---
+This is an automated message. Please do not reply to this email.
+    `.trim();
+
+    // Send email invitation to the user using sendNotification
+    sendNotification(subject, message, email, {
+      name: "Nataly Oren",
+      replyTo: COMPANY_EMAIL
+    });
+
+    // Also send notification to admin
+    sendNotification("Invitation Sent",
+      `Invitation email sent to ${name} (${email}) with Notion access link.`);
+
+    return true;
   } catch (error) {
-    console.error("Error sending invite:", error);
-    sendNotification("Error", `Error sending invite: ${error.toString()}`);
+    console.error("Error in sendNotionInvite:", error);
+    sendNotification("Error", `Error in invite process: ${error.toString()}`);
     return false;
   }
 }
 
-function sendNotification(title, message, to = COMPANY_EMAIL) {
+function sendNotification(title, message, to = COMPANY_EMAIL, options = {}) {
   try {
     if (!GmailApp) {
-      throw Error();
+      throw Error("GmailApp not available");
     }
-    GmailApp.sendEmail(to, `Notion User Management - ${title}`, message, { name: alias });
-    console.log(`Gmail notification sent to ${to}`);
-    return;
+
+    // If sending to admin (default), add prefix to title
+    const emailTitle = to === COMPANY_EMAIL
+      ? `Notion User Management - ${title}`
+      : title;
+
+    GmailApp.sendEmail(to, emailTitle, message, options);
+    console.log(`Email sent successfully to ${to}`);
   } catch (error) {
-    console.log("GmailApp not available");
+    console.error("Error sending email:", error);
   }
 }
