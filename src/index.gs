@@ -11,55 +11,53 @@ const getHeaders = () => ({
 });
 
 function onFormSubmit(e) {
-  console.log(e)
-  const row = e.values;
-  const formId = identifyForm(row);
+  console.log("Event namedValues:", e.namedValues);
+  const formId = identifyForm(e.namedValues);
 
   console.log("Form submission detected:", formId);
-  console.log("Row data:", row);
 
   if (!formId) {
     console.log("Unknown form or no data received");
     return;
   }
 
-  switch (formId) {
-    case 'trainings':
-      handleTrainingsForm(row);
-      break;
-    case 'diagnostics':
-      handleDiagnosticsForm(row);
-      break;
-    case 'registrations':
-      handleRegistrationsForm(row);
-      break;
-    default:
-      console.log("Unhandled form type:", formId);
+  const handleMap = {
+    [FORM_TYPE.TRAINING]: handleTrainingsForm,
+    [FORM_TYPE.DIAGNOSTIC]: handleDiagnosticsForm,
+    [FORM_TYPE.REGISTRATION]: handleRegistrationsForm,
   }
+
+  const formHandler = handleMap[formId]
+
+  if (typeof formHandler !== "function") {
+    console.log("Unhandled form type:", formId);
+    return
+  }
+
+  formHandler(e.namedValues)
 }
 
-const identifyForm = (row) => {
-  if (!row || row.length === 0) return null;
+const identifyForm = (namedValues) => {
+  if (!namedValues?.length) return null;
 
   // Check if row has any meaningful data
-  const hasData = row.some(value => value && value.toString().trim() !== '');
+  const hasData = Object.values(namedValues).some(values =>
+    values?.[0]?.toString().trim() !== ''
+  );
+
   if (!hasData) return null;
 
-  // Identify form by checking specific patterns for each form type
-
-  // Trainings form: has email in column B and rating in column G
-  if (row[1] && isValidEmail(row[1]) && row[6] && !isNaN(parseInt(row[6]))) {
-    return 'trainings';
+        // Check for form type using hidden field identifiers
+  if (namedValues[FORM_TYPE.REGISTRATION]?.[0]?.toString().trim() !== '') {
+    return FORM_TYPE.REGISTRATION;
   }
 
-  // Diagnostics form: has email in column B and health questions in columns C-H
-  if (row[1] && isValidEmail(row[1]) && (row[2] || row[3] || row[4] || row[5] || row[6] || row[7])) {
-    return 'diagnostics';
+  if (namedValues[FORM_TYPE.TRAINING]?.[0]?.toString().trim() !== '') {
+    return FORM_TYPE.TRAINING;
   }
 
-  // Registrations form: has name in column B, phone in column C, email in column D
-  if (row[1] && row[2] && row[3] && isValidEmail(row[3]) && row[1].toString().trim() !== '' && row[2].toString().trim() !== '') {
-    return 'registrations';
+  if (namedValues[FORM_TYPE.DIAGNOSTIC]?.[0]?.toString().trim() !== '') {
+    return FORM_TYPE.DIAGNOSTIC;
   }
 
   return null;
@@ -73,88 +71,76 @@ const isValidEmail = (email) => {
   return emailRegex.test(email.trim());
 }
 
-const getFormData = (row, formId) => {
-  const config = FORM_CONFIGS[formId];
-  if (!config) return null;
+const getFormData = (namedValues, formId) => {
+  // Helper function to safely get field value
+  const getFieldValue = (fieldName) => namedValues[fieldName]?.[0]?.toString().trim() || '';
+
+  const email = getFieldValue('Електронна адреса');
+
+  if (!isValidEmail(email)) {
+    console.log("Invalid email:", email);
+    return null;
+  }
 
   const data = {
-    formId: formId,
-    timestamp: new Date().toISOString()
+    formId,
+    email,
+    timestamp: new Date().toISOString(),
   };
 
-  if (config.nameColumn !== undefined && config.nameColumn !== null) {
-    data.name = row[config.nameColumn]?.toString().trim() || '';
+  if (formId === FORM_TYPE.TRAINING) {
+    // Training form specific fields
+    data.feelingAfter = getFieldValue('Як ти почувалась після тренувань?');
+    data.hardestPart = getFieldValue('Що було найважче?');
+    data.dislikedExercises = getFieldValue('Які вправи не сподобались взагалі?');
+    data.painAfter = getFieldValue('Щось боліло/тягнуло після тренувань?');
+    data.wellBeingRating = getFieldValue('Загальна оцінка самопочуття (від 1 до 10)');
   }
 
-  if (config.emailColumn !== undefined) {
-    data.email = row[config.emailColumn]?.toString().trim() || '';
+  if (formId === FORM_TYPE.DIAGNOSTIC) {
+    // Diagnostic form specific fields
+    data.currentFeeling = getFieldValue('Як ви зараз себе почуваєте?');
+    data.energyLevel = getFieldValue('Скільки у вас енергії та чи взагалі є єнергі:');
+    data.healthStatus = getFieldValue('Який наразі ваш стан здоров\'я? Які є хвор');
+    data.sleepQuality = getFieldValue('Як спите? Який ваш сон?');
+    data.stressLevel = getFieldValue('Маєте стреси в житті? Які с');
+    data.additionalInfo = getFieldValue('Яка в тебе a');
   }
 
-  if (config.phoneColumn !== undefined) {
-    data.phone = row[config.phoneColumn]?.toString().trim() || '';
-  }
-
-  if (config.feedbackColumn !== undefined) {
-    data.feedback = row[config.feedbackColumn]?.toString().trim() || '';
-  }
-
-  if (config.startDateColumn !== undefined) {
-    data.startDate = row[config.startDateColumn]?.toString().trim() || '';
-  }
-
-  if (config.serviceTypeColumn !== undefined) {
-    data.serviceType = row[config.serviceTypeColumn]?.toString().trim() || '';
-  }
-
-  if (config.workoutTypeColumn !== undefined) {
-    data.workoutType = row[config.workoutTypeColumn]?.toString().trim() || '';
-  }
-
-  // Add specific fields for each form type
-  if (formId === 'trainings') {
-    data.feelingAfter = row[2]?.toString().trim() || '';
-    data.hardestPart = row[3]?.toString().trim() || '';
-    data.dislikedExercises = row[4]?.toString().trim() || '';
-    data.painAfter = row[5]?.toString().trim() || '';
-    data.wellBeingRating = row[6]?.toString().trim() || '';
-  }
-
-  if (formId === 'diagnostics') {
-    data.currentFeeling = row[2]?.toString().trim() || '';
-    data.energyLevel = row[3]?.toString().trim() || '';
-    data.healthStatus = row[4]?.toString().trim() || '';
-    data.sleepQuality = row[5]?.toString().trim() || '';
-    data.stressLevel = row[6]?.toString().trim() || '';
-    data.additionalInfo = row[7]?.toString().trim() || '';
+  if (formId === FORM_TYPE.REGISTRATION) {
+    // Registration form specific fields
+    data.name = getFieldValue('Name Surname (Ім\'я Прізвище)');
+    data.phone = getFieldValue('Phone number (номер телефону)');
+    data.startDate = getFieldValue('Start colaboration (початок співпраці )');
+    data.serviceType = getFieldValue('Service type (пакет послуг)');
+    data.workoutType = getFieldValue('Workout type (Тип тренувань)');
   }
 
   return data;
 }
 
-const logFormSubmission = (formId, data, hasData) => {
+const logFormSubmission = (formId, data) => {
   const logMessage = {
     timestamp: new Date().toISOString(),
-    formId: formId,
-    hasData: hasData,
-    data: data,
-    rowLength: data ? Object.keys(data).length : 0
+    formId,
+    data,
+    rowLength: Object.keys(data ?? {}).length
   };
 
   console.log("Form submission log:", JSON.stringify(logMessage, null, 2));
 
-  if (!hasData) {
+  if (!data) {
     sendNotification("Empty Form Submission",
-      `Form '${FORM_CONFIGS[formId]?.description || formId}' submitted with no data at ${logMessage.timestamp}`);
+      `Form '${formId}' submitted with no data at ${logMessage.timestamp}`);
   }
 }
 
 const handleTrainingsForm = (row) => {
-  const formData = getFormData(row, 'trainings');
-  const hasData = formData && formData.email;
+  const formData = getFormData(row, FORM_TYPE.TRAINING);
 
-  logFormSubmission('trainings', formData, hasData);
+  logFormSubmission(FORM_TYPE.TRAINING, formData);
 
-  if (!hasData) {
+  if (!formData) {
     console.log("Trainings form received no data");
     return;
   }
@@ -164,12 +150,11 @@ const handleTrainingsForm = (row) => {
 }
 
 const handleDiagnosticsForm = (row) => {
-  const formData = getFormData(row, 'diagnostics');
-  const hasData = formData && formData.email;
+  const formData = getFormData(row, FORM_TYPE.DIAGNOSTIC);
 
-  logFormSubmission('diagnostics', formData, hasData);
+  logFormSubmission(FORM_TYPE.DIAGNOSTIC, formData);
 
-  if (!hasData) {
+  if (!formData) {
     console.log("Diagnostics form received no data");
     return;
   }
@@ -179,12 +164,11 @@ const handleDiagnosticsForm = (row) => {
 }
 
 const handleRegistrationsForm = (row) => {
-  const formData = getFormData(row, 'registrations');
-  const hasData = formData && formData.name && formData.email && formData.phone;
+  const formData = getFormData(row, FORM_TYPE.REGISTRATION);
 
-  logFormSubmission('registrations', formData, hasData);
+  logFormSubmission(FORM_TYPE.REGISTRATION, formData);
 
-  if (!hasData) {
+  if (!formData) {
     console.log("Registrations form received no data");
     return;
   }
@@ -251,25 +235,7 @@ const processHealthDiagnostics = (formData) => {
 const processRegistration = (formData) => {
   try {
     console.log(`Processing registration for ${formData.name} (${formData.email})`);
-
-    // Check if user already exists (using your existing logic)
     checkAndInviteUser(formData.name, formData.email);
-
-    // Create a registration entry in Notion
-    const registrationPayload = {
-      parent: { database_id: DB_ID },
-      properties: {
-        Title: { title: [{ text: { content: `Registration: ${formData.name}` } }] },
-        Text: { rich_text: [{ text: { content: formData.email } }] },
-        Type: { select: { name: "Registration" } },
-        Phone: { phone_number: formData.phone },
-        ServiceType: { rich_text: [{ text: { content: formData.serviceType } }] },
-        WorkoutType: { rich_text: [{ text: { content: formData.workoutType } }] },
-        StartDate: { date: { start: formData.startDate } }
-      }
-    };
-
-    // Process the registration
     sendNotification("New Registration",
       `New registration from ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nService: ${formData.serviceType}\nWorkout: ${formData.workoutType}\nStart Date: ${formData.startDate}`);
 
@@ -277,10 +243,6 @@ const processRegistration = (formData) => {
     console.error("Error processing registration:", error);
     sendNotification("Error", `Error processing registration: ${error.toString()}`);
   }
-};
-
-const check = () => {
-  checkAndInviteUser("yehor", "gangaloyegor@gmail.com");
 };
 
 function checkAndInviteUser(name, email) {
@@ -322,7 +284,7 @@ function checkAndInviteUser(name, email) {
 
     console.log("Search result:", searchResult);
 
-    if (searchResult.results && searchResult.results.length > 0) {
+    if (searchResult.results?.length > 0) {
       console.log(`User ${name} (${email}) already exists in Notion`);
       sendNotification("User already exists", `User ${name} (${email}) already exists in Notion database.`);
       return;
@@ -343,6 +305,20 @@ function checkAndInviteUser(name, email) {
 }
 
 function createNotionPage(name, email) {
+      // Create a registration entry in Notion
+      // const registrationPayload = {
+      //   parent: { database_id: DB_ID },
+      //   properties: {
+      //     Title: { title: [{ text: { content: `Registration: ${formData.name}` } }] },
+      //     Text: { rich_text: [{ text: { content: formData.email } }] },
+      //     Type: { select: { name: "Registration" } },
+      //     Phone: { phone_number: formData.phone },
+      //     ServiceType: { rich_text: [{ text: { content: formData.serviceType } }] },
+      //     WorkoutType: { rich_text: [{ text: { content: formData.workoutType } }] },
+      //     StartDate: { date: { start: formData.startDate } }
+      //   }
+      // };
+
   const payload = {
     parent: { database_id: DB_ID },
     properties: {
@@ -428,52 +404,3 @@ function sendNotification(title, message, to = COMPANY_EMAIL) {
     console.log("GmailApp not available");
   }
 }
-
-const testFormIdentification = () => {
-  console.log("Testing form identification system...");
-
-  // Test trainings form data (email in column B, rating in column G)
-  const trainingsRow = ['', 'john@example.com', 'Great workout!', 'Squats were hard', 'Burpees', 'No pain', '8'];
-  const trainingsFormId = identifyForm(trainingsRow);
-  console.log("Trainings form test:", trainingsFormId);
-
-  // Test diagnostics form data (email in column B, health questions in C-H)
-  const diagnosticsRow = ['', 'jane@example.com', 'Good', 'High energy', 'Healthy', 'Sleeping well', 'Low stress', 'No issues'];
-  const diagnosticsFormId = identifyForm(diagnosticsRow);
-  console.log("Diagnostics form test:", diagnosticsFormId);
-
-  // Test registrations form data (name in B, phone in C, email in D)
-  const registrationsRow = ['', 'Bob Wilson', '380123456789', 'bob@example.com', '2025-01-15', '3 months', 'Gym Workout'];
-  const registrationsFormId = identifyForm(registrationsRow);
-  console.log("Registrations form test:", registrationsFormId);
-
-  // Test empty row
-  const emptyRow = ['', '', '', '', '', '', '', ''];
-  const emptyFormId = identifyForm(emptyRow);
-  console.log("Empty row test:", emptyFormId);
-
-  // Test invalid data
-  const invalidRow = ['Invalid', 'Data', 'Structure'];
-  const invalidFormId = identifyForm(invalidRow);
-  console.log("Invalid row test:", invalidFormId);
-
-  console.log("Form identification test completed.");
-};
-
-const testFormDataExtraction = () => {
-  console.log("Testing form data extraction...");
-
-  const trainingsRow = ['', 'john@example.com', 'Great workout!', 'Squats were hard', 'Burpees', 'No pain', '8'];
-  const trainingsData = getFormData(trainingsRow, 'trainings');
-  console.log("Trainings form data:", trainingsData);
-
-  const diagnosticsRow = ['', 'jane@example.com', 'Good', 'High energy', 'Healthy', 'Sleeping well', 'Low stress', 'No issues'];
-  const diagnosticsData = getFormData(diagnosticsRow, 'diagnostics');
-  console.log("Diagnostics form data:", diagnosticsData);
-
-  const registrationsRow = ['', 'Bob Wilson', '380123456789', 'bob@example.com', '2025-01-15', '3 months', 'Gym Workout'];
-  const registrationsData = getFormData(registrationsRow, 'registrations');
-  console.log("Registrations form data:", registrationsData);
-
-  console.log("Form data extraction test completed.");
-};
