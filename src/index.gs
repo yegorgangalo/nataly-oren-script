@@ -38,27 +38,6 @@ function onFormSubmit(e) {
   }
 }
 
-const FORM_CONFIGS = {
-  training: {
-    nameColumn: 1,
-    emailColumn: 3,
-    requiredColumns: [1, 3],
-    description: "Training registration form"
-  },
-  consultation: {
-    nameColumn: 2,
-    emailColumn: 4,
-    requiredColumns: [2, 4],
-    description: "Consultation request form"
-  },
-  feedback: {
-    nameColumn: 0,
-    feedbackColumn: 5,
-    requiredColumns: [0, 5],
-    description: "Feedback submission form"
-  }
-};
-
 const identifyForm = (row) => {
   if (!row || row.length === 0) return null;
 
