@@ -1,29 +1,7 @@
 // Common constants
-const API_KEY = PropertiesService.getScriptProperties().getProperty('NOTION_API_KEY');
-const DB_ID = PropertiesService.getScriptProperties().getProperty('NOTION_DB_ID');
-const API_BASE_URL = PropertiesService.getScriptProperties().getProperty('NOTION_API_BASE_URL');
 const COMPANY_EMAIL = PropertiesService.getScriptProperties().getProperty('COMPANY_EMAIL');
-const NOTION_BASE_URL = 'https://www.notion.so';
 
-// Common headers
-const getHeaders = () => ({
-  "Authorization": `Bearer ${API_KEY}`,
-  "Notion-Version": "2022-06-28",
-});
 
-const getNotionShareLink = () => {
-  // Generate a shareable link to your Notion database
-  // You can customize this URL based on your setup
-
-  // Option 1: Direct database link (public)
-  return `${NOTION_BASE_URL}/${DB_ID.replace(/-/g, '')}?v=`;
-
-  // Option 2: If you have a specific page template
-  // return `${NOTION_BASE_URL}/Your-Page-Title-${DB_ID.replace(/-/g, '')}`;
-
-  // Option 3: Custom domain (if you have one)
-  // return `${NOTION_BASE_URL}/notion/${DB_ID}`;
-};
 
 function onFormSubmit(e) {
   console.log("Event namedValues:", e.namedValues);
@@ -128,10 +106,10 @@ const logFormSubmission = (formId, data) => {
 
   console.log("Form submission log:", JSON.stringify(logMessage, null, 2));
 
-  if (!data) {
-    sendNotification("Empty Form Submission",
-      `Form '${formId}' submitted with no data at ${logMessage.timestamp}`);
-  }
+      if (!data) {
+      notificationService.sendEmail("Empty Form Submission",
+        `Form '${formId}' submitted with no data at ${logMessage.timestamp}`);
+    }
 }
 
 const handleTrainingsForm = (row) => {
@@ -182,26 +160,11 @@ const processTrainingFeedback = (formData) => {
   try {
     console.log(`Processing training feedback from ${formData.email}`);
 
-    // Create a training feedback entry in Notion
-    const feedbackPayload = {
-      parent: { database_id: DB_ID },
-      properties: {
-        Title: { title: [{ text: { content: `Training Feedback: ${formData.email}` } }] },
-        Text: { rich_text: [{ text: { content: formData.email } }] },
-        Type: { select: { name: "Training Feedback" } },
-        Rating: { number: parseInt(formData.wellBeingRating) || 0 }
-      }
-    };
-
-    // Process the training feedback
-    sendNotification("Training Feedback Received",
-      `New training feedback from ${formData.email}\nRating: ${formData.wellBeingRating}/10\nFeeling: ${formData.feelingAfter}`);
-
-    // You can add more specific logic here for training feedback
-
+    notificationService.sendEmail("Training Feedback Received",
+      `New training feedback from ${formData.email}`);
   } catch (error) {
     console.error("Error processing training feedback:", error);
-    sendNotification("Error", `Error processing training feedback: ${error.toString()}`);
+    notificationService.sendEmail("Error", `Error processing training feedback: ${error.toString()}`);
   }
 };
 
@@ -209,152 +172,52 @@ const processHealthDiagnostics = (formData) => {
   try {
     console.log(`Processing health diagnostics from ${formData.email}`);
 
-    // Create a health diagnostics entry in Notion
-    const diagnosticsPayload = {
-      parent: { database_id: DB_ID },
-      properties: {
-        Title: { title: [{ text: { content: `Health Diagnostics: ${formData.email}` } }] },
-        Text: { rich_text: [{ text: { content: formData.email } }] },
-        Type: { select: { name: "Health Diagnostics" } }
-      }
-    };
-
-    // Process the health diagnostics
-    sendNotification("Health Diagnostics Received",
-      `New health diagnostics from ${formData.email}\nCurrent Feeling: ${formData.currentFeeling}\nEnergy Level: ${formData.energyLevel}\nHealth Status: ${formData.healthStatus}`);
-
-    // You can add more specific logic here for health diagnostics
-
+    notificationService.sendEmail("Health Diagnostics Received",
+      `New health diagnostics from ${formData.email}`);
   } catch (error) {
     console.error("Error processing health diagnostics:", error);
-    sendNotification("Error", `Error processing health diagnostics: ${error.toString()}`);
+    notificationService.sendEmail("Error", `Error processing health diagnostics: ${error.toString()}`);
   }
 };
 
 const processRegistration = (formData) => {
   try {
-    console.log(`Processing registration for ${formData.name} (${formData.email})`);
-    checkAndInviteUser(formData.name, formData.email);
-    sendNotification("New Registration",
-      `New registration from ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nService: ${formData.serviceType}\nWorkout: ${formData.workoutType}\nStart Date: ${formData.startDate}`);
+    const { name, email, phone, serviceType, workoutType, startDate } = formData;
+    console.log(`Processing registration for ${name} (${email})`);
+    checkAndInviteUser(name, email);
+    notificationService.sendEmail("New Registration",
+      `New registration from ${name}\nEmail: ${email}\nPhone: ${phone}\nService: ${serviceType}\nWorkout: ${workoutType}\nStart Date: ${startDate}`);
 
   } catch (error) {
     console.error("Error processing registration:", error);
-    sendNotification("Error", `Error processing registration: ${error.toString()}`);
+    notificationService.sendEmail("Error", `Error processing registration: ${error.toString()}`);
   }
 };
 
-function checkAndInviteUser(name, email) {
+async function checkAndInviteUser(name, email) {
   try {
-    const searchQuery = {
-      filter: {
-        and: [
-          {
-            property: "Title",
-            title: {
-              equals: name
-            }
-          },
-          {
-            property: "Text",
-            rich_text: {
-              equals: email
-            }
-          }
-        ]
-      },
-      page_size: 1
-    };
+    const result = await notionService.checkAndInviteUser(name, email);
 
-    const searchOptions = {
-      method: "post",
-      contentType: "application/json",
-      headers: getHeaders(),
-      payload: JSON.stringify(searchQuery)
-    };
-
-    const searchResponse = UrlFetchApp.fetch(`${API_BASE_URL}/v1/databases/${DB_ID}/query`, searchOptions);
-
-    if (searchResponse.getResponseCode() !== 200) {
-      throw new Error(`HTTP ${searchResponse.getResponseCode()}: ${searchResponse.getContentText()}`);
-    }
-
-    const searchResult = JSON.parse(searchResponse.getContentText());
-
-    console.log("Search result:", searchResult);
-
-    if (searchResult.results?.length > 0) {
-      console.log(`User ${name} (${email}) already exists in Notion`);
-      sendNotification("User already exists", `User ${name} (${email}) already exists in Notion database.`);
+    if (result.exists) {
+      notificationService.sendEmail("User already exists", result.message);
       return;
     }
 
-    console.log(`User ${name} (${email}) doesn't exist, sending invite...`);
-
-    const pageCreated = createNotionPage(name, email);
-
-    if (pageCreated) {
-      sendNotionInvite(email, name);
+    if (result.created) {
+      notificationService.sendEmail("Success", result.message);
+      // sendNotionInvite(email, name);
+    } else {
+      notificationService.sendEmail("Error", result.message);
     }
 
   } catch (error) {
     console.error("Error checking user:", error);
-    sendNotification("Error", `Error checking user: ${error.toString()}`);
+    notificationService.sendEmail("Error", `Error checking user: ${error.toString()}`);
   }
 }
 
-function createNotionPage(name, email) {
-      // Create a registration entry in Notion
-      // const registrationPayload = {
-      //   parent: { database_id: DB_ID },
-      //   properties: {
-      //     Title: { title: [{ text: { content: `Registration: ${formData.name}` } }] },
-      //     Text: { rich_text: [{ text: { content: formData.email } }] },
-      //     Type: { select: { name: "Registration" } },
-      //     Phone: { phone_number: formData.phone },
-      //     ServiceType: { rich_text: [{ text: { content: formData.serviceType } }] },
-      //     WorkoutType: { rich_text: [{ text: { content: formData.workoutType } }] },
-      //     StartDate: { date: { start: formData.startDate } }
-      //   }
-      // };
 
-  const payload = {
-    parent: { database_id: DB_ID },
-    properties: {
-      Title: { title: [{ text: { content: name } }] },
-      Text: { rich_text: [{ text: { content: email } }] }
-    },
-    children: [
-      ...getTemplate().children
-    ]
-  };
 
-  const options = {
-    method: "post",
-    contentType: "application/json",
-    headers: getHeaders(),
-    payload: JSON.stringify(payload)
-  };
-
-  try {
-    const result = UrlFetchApp.fetch(`${API_BASE_URL}/v1/pages`, options);
-    const responseCode = result.getResponseCode();
-
-    if (responseCode === 200) {
-      console.log("Page created successfully");
-      sendNotification("Success", `Page created for user ${name} (${email})`);
-      return true;
-    } else {
-      console.error("Failed to create page, response code:", responseCode);
-      sendNotification("Error", `Failed to create page for ${name}, response code: ${responseCode}`);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error creating page:", error);
-    sendNotification("Error", `Error creating page: ${error.toString()}`);
-    return false;
-  }
-}
 
 function sendNotionInvite(email, name) {
   try {
@@ -366,7 +229,7 @@ Hello ${name}!
 Welcome to our platform! Your account has been created successfully.
 
 🔗 **Access Your Dashboard:**
-${getNotionShareLink()}
+${notionService.getNotionShareLink()}
 
 📱 **What you can do:**
 • View your personal dashboard
@@ -382,38 +245,20 @@ Nataly Oren
 This is an automated message. Please do not reply to this email.
     `.trim();
 
-    // Send email invitation to the user using sendNotification
-    sendNotification(subject, message, email, {
+    // Send email invitation to the user using notificationService
+    notificationService.sendEmail(subject, message, email, {
       name: "Nataly Oren",
       replyTo: COMPANY_EMAIL
     });
 
     // Also send notification to admin
-    sendNotification("Invitation Sent",
+    notificationService.sendEmail("Invitation Sent",
       `Invitation email sent to ${name} (${email}) with Notion access link.`);
 
     return true;
   } catch (error) {
     console.error("Error in sendNotionInvite:", error);
-    sendNotification("Error", `Error in invite process: ${error.toString()}`);
+    notificationService.sendEmail("Error", `Error in invite process: ${error.toString()}`);
     return false;
-  }
-}
-
-function sendNotification(title, message, to = COMPANY_EMAIL, options = {}) {
-  try {
-    if (!GmailApp) {
-      throw Error("GmailApp not available");
-    }
-
-    // If sending to admin (default), add prefix to title
-    const emailTitle = to === COMPANY_EMAIL
-      ? `Notion User Management - ${title}`
-      : title;
-
-    GmailApp.sendEmail(to, emailTitle, message, options);
-    console.log(`Email sent successfully to ${to}`);
-  } catch (error) {
-    console.error("Error sending email:", error);
   }
 }
