@@ -1,8 +1,6 @@
 // Common constants
 const COMPANY_EMAIL = PropertiesService.getScriptProperties().getProperty('COMPANY_EMAIL');
 
-
-
 function onFormSubmit(e) {
   console.log("Event namedValues:", e.namedValues);
   const formId = identifyForm(e.namedValues);
@@ -40,8 +38,6 @@ const identifyForm = (namedValues) => {
   return null;
 }
 
-
-
 const isValidEmail = (email) => {
   if (!email || typeof email !== 'string') return false;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -49,7 +45,6 @@ const isValidEmail = (email) => {
 }
 
 const getFormData = (namedValues, formId) => {
-  // Helper function to safely get field value
   const getFieldValue = (fieldName) => namedValues[fieldName]?.[0]?.toString().trim() || '';
 
   const email = getFieldValue('Електронна адреса');
@@ -66,7 +61,6 @@ const getFormData = (namedValues, formId) => {
   };
 
   if (formId === FORM_TYPE.TRAINING) {
-    // Training form specific fields
     data.feelingAfter = getFieldValue('Як ти почувалась після тренувань?');
     data.hardestPart = getFieldValue('Що було найважче?');
     data.dislikedExercises = getFieldValue('Які вправи не сподобались взагалі?');
@@ -75,7 +69,6 @@ const getFormData = (namedValues, formId) => {
   }
 
   if (formId === FORM_TYPE.DIAGNOSTIC) {
-    // Diagnostic form specific fields
     data.currentFeeling = getFieldValue('Як ви зараз себе почуваєте?');
     data.energyLevel = getFieldValue('Скільки у вас енергії та чи взагалі є єнергі:');
     data.healthStatus = getFieldValue('Який наразі ваш стан здоров\'я? Які є хвор');
@@ -85,7 +78,6 @@ const getFormData = (namedValues, formId) => {
   }
 
   if (formId === FORM_TYPE.REGISTRATION) {
-    // Registration form specific fields
     data.name = getFieldValue('Name Surname (Ім\'я Прізвище)');
     data.phone = getFieldValue('Phone number (номер телефону)');
     data.startDate = getFieldValue('Start colaboration (початок співпраці )');
@@ -106,10 +98,11 @@ const logFormSubmission = (formId, data) => {
 
   console.log("Form submission log:", JSON.stringify(logMessage, null, 2));
 
-      if (!data) {
-      notificationService.sendEmail("Empty Form Submission",
-        `Form '${formId}' submitted with no data at ${logMessage.timestamp}`);
-    }
+  if (!data) {
+    notificationService.sendEmail("Empty Form Submission",
+      `Form '${formId}' submitted with no data at ${logMessage.timestamp}`);
+    telegramService.sendErrorNotification(new Error("Empty form submission"), `Form '${formId}' submitted with no data`);
+  }
 }
 
 const handleTrainingsForm = (row) => {
@@ -154,17 +147,17 @@ const handleRegistrationsForm = (row) => {
   processRegistration(formData);
 }
 
-
-
 const processTrainingFeedback = (formData) => {
   try {
     console.log(`Processing training feedback from ${formData.email}`);
 
     notificationService.sendEmail("Training Feedback Received",
       `New training feedback from ${formData.email}`);
+    telegramService.sendFormNotification("Training", formData);
   } catch (error) {
     console.error("Error processing training feedback:", error);
     notificationService.sendEmail("Error", `Error processing training feedback: ${error.toString()}`);
+    telegramService.sendErrorNotification(error, "Training feedback processing");
   }
 };
 
@@ -174,9 +167,11 @@ const processHealthDiagnostics = (formData) => {
 
     notificationService.sendEmail("Health Diagnostics Received",
       `New health diagnostics from ${formData.email}`);
+    telegramService.sendFormNotification("Diagnostic", formData);
   } catch (error) {
     console.error("Error processing health diagnostics:", error);
     notificationService.sendEmail("Error", `Error processing health diagnostics: ${error.toString()}`);
+    telegramService.sendErrorNotification(error, "Health diagnostics processing");
   }
 };
 
@@ -187,10 +182,12 @@ const processRegistration = (formData) => {
     checkAndInviteUser(name, email);
     notificationService.sendEmail("New Registration",
       `New registration from ${name}\nEmail: ${email}\nPhone: ${phone}\nService: ${serviceType}\nWorkout: ${workoutType}\nStart Date: ${startDate}`);
+    telegramService.sendFormNotification("Registration", formData);
 
   } catch (error) {
     console.error("Error processing registration:", error);
     notificationService.sendEmail("Error", `Error processing registration: ${error.toString()}`);
+    telegramService.sendErrorNotification(error, "Registration processing");
   }
 };
 
@@ -200,28 +197,27 @@ async function checkAndInviteUser(name, email) {
 
     if (result.exists) {
       notificationService.sendEmail("User already exists", result.message);
+      telegramService.sendMessage(`<b>ℹ️ User Already Exists</b>\n\n${result.message}`);
       return;
     }
 
     if (result.created) {
       notificationService.sendEmail("Success", result.message);
-      // sendNotionInvite(email, name);
+      telegramService.sendMessage(`<b>✅ User Created Successfully</b>\n\n${result.message}`);
     } else {
       notificationService.sendEmail("Error", result.message);
+      telegramService.sendErrorNotification(new Error(result.message), "User creation");
     }
 
   } catch (error) {
     console.error("Error checking user:", error);
     notificationService.sendEmail("Error", `Error checking user: ${error.toString()}`);
+    telegramService.sendErrorNotification(error, "User check");
   }
 }
 
-
-
-
 function sendNotionInvite(email, name) {
   try {
-    // Send email invitation to the user
     const subject = "Welcome! Your Notion Access is Ready";
     const message = `
 Hello ${name}!
@@ -231,7 +227,7 @@ Welcome to our platform! Your account has been created successfully.
 🔗 **Access Your Dashboard:**
 ${notionService.getNotionShareLink()}
 
-📱 **What you can do:**
+�� **What you can do:**
 • View your personal dashboard
 • Track your progress
 • Access your documents and resources
@@ -245,20 +241,21 @@ Nataly Oren
 This is an automated message. Please do not reply to this email.
     `.trim();
 
-    // Send email invitation to the user using notificationService
     notificationService.sendEmail(subject, message, email, {
       name: "Nataly Oren",
       replyTo: COMPANY_EMAIL
     });
 
-    // Also send notification to admin
     notificationService.sendEmail("Invitation Sent",
       `Invitation email sent to ${name} (${email}) with Notion access link.`);
+
+    telegramService.sendMessage(`<b>📧 Invitation Sent</b>\n\nInvitation email sent to ${name} (${email}) with Notion access link.`);
 
     return true;
   } catch (error) {
     console.error("Error in sendNotionInvite:", error);
     notificationService.sendEmail("Error", `Error in invite process: ${error.toString()}`);
+    telegramService.sendErrorNotification(error, "Notion invite process");
     return false;
   }
 }
