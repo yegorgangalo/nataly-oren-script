@@ -164,7 +164,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "➡️ https://youtube.com/shorts/GKwlZeztX3o?feature=share" }
+        text: {
+          content: "➡️ https://youtube.com/shorts/GKwlZeztX3o?feature=share",
+          link: { url: "https://youtube.com/shorts/GKwlZeztX3o?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -184,7 +188,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "➡️ https://youtube.com/shorts/N1fwLrDmRJM?feature=share" }
+        text: {
+          content: "➡️ https://youtube.com/shorts/N1fwLrDmRJM?feature=share",
+          link: { url: "https://youtube.com/shorts/N1fwLrDmRJM?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -194,7 +202,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/e_TiQAaxiZI?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/e_TiQAaxiZI?feature=share",
+          link: { url: "https://youtube.com/shorts/e_TiQAaxiZI?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -204,7 +216,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/r2Vy6kfrSNA?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/r2Vy6kfrSNA?feature=share",
+          link: { url: "https://youtube.com/shorts/r2Vy6kfrSNA?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -214,7 +230,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/C95xTA1Q2fs?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/C95xTA1Q2fs?feature=share",
+          link: { url: "https://youtube.com/shorts/C95xTA1Q2fs?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -234,7 +254,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk" }
+        text: {
+          content: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk",
+          link: { url: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk" },
+          type: "external"
+        }
       }]
     }
   },
@@ -264,7 +288,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "➡️ https://youtube.com/shorts/GKwlZeztX3o?feature=share" }
+        text: {
+          content: "➡️ https://youtube.com/shorts/GKwlZeztX3o?feature=share",
+          link: { url: "https://youtube.com/shorts/GKwlZeztX3o?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -284,7 +312,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "➡️ https://youtube.com/shorts/x5AMKjG_xEU?feature=share" }
+        text: {
+          content: "➡️ https://youtube.com/shorts/x5AMKjG_xEU?feature=share",
+          link: { url: "https://youtube.com/shorts/x5AMKjG_xEU?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -294,7 +326,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/sW5FET0jJmo?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/sW5FET0jJmo?feature=share",
+          link: { url: "https://youtube.com/shorts/sW5FET0jJmo?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -304,7 +340,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/5aG1tdF_0p4?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/5aG1tdF_0p4?feature=share",
+          link: { url: "https://youtube.com/shorts/5aG1tdF_0p4?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -314,7 +354,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/gficTJkcbYw?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/gficTJkcbYw?feature=share",
+          link: { url: "https://youtube.com/shorts/gficTJkcbYw?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -324,7 +368,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/eLkKcFfczbU?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/eLkKcFfczbU?feature=share",
+          link: { url: "https://youtube.com/shorts/eLkKcFfczbU?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -334,7 +382,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/-zWbajXoGPI?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/-zWbajXoGPI?feature=share",
+          link: { url: "https://youtube.com/shorts/-zWbajXoGPI?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -354,7 +406,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk" }
+        text: {
+          content: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk",
+          link: { url: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk" },
+          type: "external"
+        }
       }]
     }
   },
@@ -384,7 +440,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "➡️ https://youtube.com/shorts/GKwlZeztX3o?feature=share" }
+        text: {
+          content: "➡️ https://youtube.com/shorts/GKwlZeztX3o?feature=share",
+          link: { url: "https://youtube.com/shorts/GKwlZeztX3o?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -404,7 +464,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "➡️ https://youtube.com/shorts/IY1K1SMr8ZQ?feature=share" }
+        text: {
+          content: "➡️ https://youtube.com/shorts/IY1K1SMr8ZQ?feature=share",
+          link: { url: "https://youtube.com/shorts/IY1K1SMr8ZQ?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -414,7 +478,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/-5inocBrtBQ?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/-5inocBrtBQ?feature=share",
+          link: { url: "https://youtube.com/shorts/-5inocBrtBQ?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -424,7 +492,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/0vJIqjSazlU?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/0vJIqjSazlU?feature=share",
+          link: { url: "https://youtube.com/shorts/0vJIqjSazlU?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -434,7 +506,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/0k-FSsrxRUY?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/0k-FSsrxRUY?feature=share",
+          link: { url: "https://youtube.com/shorts/0k-FSsrxRUY?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -444,7 +520,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/G9pS_eq_T68?feature=share" }
+          text: {
+          content: "https://youtube.com/shorts/G9pS_eq_T68?feature=share",
+          link: { url: "https://youtube.com/shorts/G9pS_eq_T68?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -454,7 +534,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://youtube.com/shorts/qh4e_fu-iXQ?feature=share" }
+        text: {
+          content: "https://youtube.com/shorts/qh4e_fu-iXQ?feature=share",
+          link: { url: "https://youtube.com/shorts/qh4e_fu-iXQ?feature=share" },
+          type: "external"
+        }
       }]
     }
   },
@@ -474,7 +558,11 @@ const getVideoBlocks = () => [
     paragraph: {
       rich_text: [{
         type: "text",
-        text: { content: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk" }
+        text: {
+          content: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk",
+          link: { url: "https://drive.google.com/file/d/13t10njg26ITdqEb3rlN1vgEkjZyO_gIM/view?usp=drivesdk" },
+          type: "external"
+        }
       }]
     }
   }
