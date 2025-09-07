@@ -91,7 +91,7 @@ class NotionService {
           Text: { rich_text: [{ text: { content: email } }] }
         },
         children: [
-          ...getTemplate().children
+          ...getTemplate(name).children
         ]
       };
 
