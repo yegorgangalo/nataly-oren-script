@@ -50,7 +50,13 @@ class TelegramService {
 
   sendFormNotification(formType, formData) {
     const timestamp = new Date().toLocaleString('uk-UA');
-    let message = `<b>📋 New ${formType} Form Submission</b>\n`;
+    const formNameMap = {
+      [FORM_TYPE.TRAINING]: "Feedback",
+      [FORM_TYPE.DIAGNOSTIC]: "Diagnostic",
+      [FORM_TYPE.REGISTRATION]: "Registration"
+    }
+    const formName = formNameMap[formType] || 'Unknown';
+    let message = `<b>📋 New ${formName} Form Submission</b>\n`;
     message += `⏰ <i>${timestamp}</i>\n\n`;
 
     if (formData.email) {
