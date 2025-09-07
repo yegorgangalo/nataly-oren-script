@@ -1,5 +1,6 @@
 // Common constants
 const COMPANY_EMAIL = PropertiesService.getScriptProperties().getProperty('COMPANY_EMAIL');
+const ERROR_EMAIL = PropertiesService.getScriptProperties().getProperty('ERROR_EMAIL');
 
 function onFormSubmit(e) {
   console.log("Event namedValues:", e.namedValues);
@@ -100,8 +101,7 @@ const logFormSubmission = (formId, data) => {
 
   if (!data) {
     notificationService.sendEmail("Empty Form Submission",
-      `Form '${formId}' submitted with no data at ${logMessage.timestamp}`);
-    telegramService.sendErrorNotification(new Error("Empty form submission"), `Form '${formId}' submitted with no data`);
+      `Form '${formId}' submitted with no data at ${logMessage.timestamp}`, ERROR_EMAIL);
   }
 }
 
@@ -153,11 +153,10 @@ const processTrainingFeedback = (formData) => {
 
     notificationService.sendEmail("Training Feedback Received",
       `New training feedback from ${formData.email}`);
-    telegramService.sendFormNotification("Training", formData);
+    telegramService.sendFormNotification(FORM_TYPE.TRAINING, formData);
   } catch (error) {
-    console.error("Error processing training feedback:", error);
-    notificationService.sendEmail("Error", `Error processing training feedback: ${error.toString()}`);
-    telegramService.sendErrorNotification(error, "Training feedback processing");
+    console.error("Error processing feedback:", error);
+    notificationService.sendEmail("Error", `Error processing feedback: ${error.toString()}`, ERROR_EMAIL);
   }
 };
 
@@ -167,11 +166,10 @@ const processHealthDiagnostics = (formData) => {
 
     notificationService.sendEmail("Health Diagnostics Received",
       `New health diagnostics from ${formData.email}`);
-    telegramService.sendFormNotification("Diagnostic", formData);
+    telegramService.sendFormNotification(FORM_TYPE.DIAGNOSTIC, formData);
   } catch (error) {
     console.error("Error processing health diagnostics:", error);
-    notificationService.sendEmail("Error", `Error processing health diagnostics: ${error.toString()}`);
-    telegramService.sendErrorNotification(error, "Health diagnostics processing");
+    notificationService.sendEmail("Error", `Error processing health diagnostics: ${error.toString()}`, ERROR_EMAIL);
   }
 };
 
@@ -182,12 +180,11 @@ const processRegistration = (formData) => {
     checkAndInviteUser(name, email);
     notificationService.sendEmail("New Registration",
       `New registration from ${name}\nEmail: ${email}\nPhone: ${phone}\nService: ${serviceType}\nWorkout: ${workoutType}\nStart Date: ${startDate}`);
-    telegramService.sendFormNotification("Registration", formData);
+    telegramService.sendFormNotification(FORM_TYPE.REGISTRATION, formData);
 
   } catch (error) {
     console.error("Error processing registration:", error);
-    notificationService.sendEmail("Error", `Error processing registration: ${error.toString()}`);
-    telegramService.sendErrorNotification(error, "Registration processing");
+    notificationService.sendEmail("Error", `Error processing registration: ${error.toString()}`, ERROR_EMAIL);
   }
 };
 
@@ -196,23 +193,19 @@ async function checkAndInviteUser(name, email) {
     const result = await notionService.checkAndInviteUser(name, email);
 
     if (result.exists) {
-      notificationService.sendEmail("User already exists", result.message);
-      telegramService.sendMessage(`<b>ℹ️ User Already Exists</b>\n\n${result.message}`);
+      notificationService.sendEmail("User already exists", result.message, ERROR_EMAIL);
       return;
     }
 
     if (result.created) {
       notificationService.sendEmail("Success", result.message);
-      telegramService.sendMessage(`<b>✅ User Created Successfully</b>\n\n${result.message}`);
     } else {
-      notificationService.sendEmail("Error", result.message);
-      telegramService.sendErrorNotification(new Error(result.message), "User creation");
+      notificationService.sendEmail("Error", result.message, ERROR_EMAIL);
     }
 
   } catch (error) {
     console.error("Error checking user:", error);
-    notificationService.sendEmail("Error", `Error checking user: ${error.toString()}`);
-    telegramService.sendErrorNotification(error, "User check");
+    notificationService.sendEmail("Error", `Error checking user: ${error.toString()}`, ERROR_EMAIL);
   }
 }
 
@@ -249,13 +242,10 @@ This is an automated message. Please do not reply to this email.
     notificationService.sendEmail("Invitation Sent",
       `Invitation email sent to ${name} (${email}) with Notion access link.`);
 
-    telegramService.sendMessage(`<b>📧 Invitation Sent</b>\n\nInvitation email sent to ${name} (${email}) with Notion access link.`);
-
     return true;
   } catch (error) {
     console.error("Error in sendNotionInvite:", error);
-    notificationService.sendEmail("Error", `Error in invite process: ${error.toString()}`);
-    telegramService.sendErrorNotification(error, "Notion invite process");
+    notificationService.sendEmail("Error", `Error in invite process: ${error.toString()}`, ERROR_EMAIL);
     return false;
   }
 }

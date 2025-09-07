@@ -57,33 +57,13 @@ class TelegramService {
       message += `📧 <b>Email:</b> ${formData.email}\n`;
     }
 
-    if (formData.name) {
-      message += `👤 <b>Name:</b> ${formData.name}\n`;
+    if (formType === FORM_TYPE.TRAINING) {
     }
 
-    if (formData.phone) {
-      message += `📞 <b>Phone:</b> ${formData.phone}\n`;
+    if (formType === FORM_TYPE.DIAGNOSTIC) {
     }
 
-    if (formType === 'Training') {
-      message += `\n🏃‍♀️ <b>Training Feedback:</b>\n`;
-      if (formData.feelingAfter) message += `• Feeling: ${formData.feelingAfter}\n`;
-      if (formData.wellBeingRating) message += `• Rating: ${formData.wellBeingRating}/10\n`;
-      if (formData.hardestPart) message += `• Hardest part: ${formData.hardestPart}\n`;
-    }
-
-    if (formType === 'Diagnostic') {
-      message += `\n🏥 <b>Health Diagnostics:</b>\n`;
-      if (formData.currentFeeling) message += `• Current feeling: ${formData.currentFeeling}\n`;
-      if (formData.energyLevel) message += `• Energy level: ${formData.energyLevel}\n`;
-      if (formData.healthStatus) message += `• Health status: ${formData.healthStatus}\n`;
-    }
-
-    if (formType === 'Registration') {
-      message += `\n📝 <b>Registration Details:</b>\n`;
-      if (formData.serviceType) message += `• Service: ${formData.serviceType}\n`;
-      if (formData.workoutType) message += `• Workout type: ${formData.workoutType}\n`;
-      if (formData.startDate) message += `• Start date: ${formData.startDate}\n`;
+    if (formType === FORM_TYPE.REGISTRATION) {
     }
 
     return this.sendMessage(message);
